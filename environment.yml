@@ -1,0 +1,15 @@
+name: bmi-burden
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - pyarrow
+  - geopandas
+  - rasterio
+  - xarray
+  - netcdf4
+  - matplotlib
+  - pillow
+  - pip

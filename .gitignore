@@ -1,0 +1,24 @@
+# Data and pipeline outputs are not tracked (download per docs/DATA.md)
+data/
+results/
+*.tif
+*.tiff
+*.nc
+*.rds
+*.RDS
+*.csv.gz
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
