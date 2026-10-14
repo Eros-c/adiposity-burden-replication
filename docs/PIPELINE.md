@@ -144,3 +144,13 @@ python code/s11_all_disease_extension/04_cause_level_2015_dalys_v1.py
 `08_plot_figure1B_historical_template_test_v2.py` and
 `audit_panel_alignment.py` are shared helper modules imported by the figure
 scripts; they are not run directly.
+
+## s16 — Interactive results explorer (website)
+```
+python code/s16_web_export/export_web_data_v1.py
+```
+Exports the lightweight trend JSONs and 0.25° WebP map overlays behind the
+interactive explorer in `docs/` (BMI and high-BMI-attributable burden,
+2015–2050). Copy the generated `data/` and `maps/` folders plus
+`index.html` / `app.js` / `style.css` into `docs/`; serving `docs/` with
+GitHub Pages publishes the explorer.

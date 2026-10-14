@@ -2,7 +2,7 @@ if (-not $env:BMI_ROOT) { $env:BMI_ROOT = (Resolve-Path "$PSScriptRoot\..\..").P
 
 [CmdletBinding()]
 param(
-    [string]$OutputRoot = "$env:BMI_ROOT\results\未来情景预测"
+    [string]$OutputRoot = '$env:BMI_ROOT\results\未来情景预测'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -127,13 +127,13 @@ Write-Utf8BomCsv -Data $stageManifest -Path $paths.stage_manifest
 $baselineRoots = @(
     [pscustomobject]@{
         root_id='regional_steps_enhanced_mrp_20260812'
-        path="$env:BMI_ROOT\results\降尺度\experiments\BMI7_MRP_STEPS_regional_augmentation_20260812"
+        path='$env:BMI_ROOT\results\降尺度\experiments\BMI7_MRP_STEPS_regional_augmentation_20260812'
         role='Current enhanced MRP, validation, 2015-2024 three-scale mapping and QA'
         frozen='true'
     },
     [pscustomobject]@{
         root_id='pre_steps_enhanced_mrp_stage09'
-        path="$env:BMI_ROOT\results\降尺度\experiments\BMI7_model_comparison_20260728\gated_run_v1\stage_09_conditional_mapping_enhanced_mrp_v1"
+        path='$env:BMI_ROOT\results\降尺度\experiments\BMI7_model_comparison_20260728\gated_run_v1\stage_09_conditional_mapping_enhanced_mrp_v1'
         role='Earlier enhanced MRP mapping baseline retained for provenance'
         frozen='true'
     }
@@ -195,24 +195,24 @@ Write-Utf8NoBom -Text ($baselineSummary | ConvertTo-Json -Depth 8) -Path $paths.
 
 $inventoryDefinitions = @(
     [ordered]@{id='baseline_mrp';dataset='区域STEPS增强MRP与2015-2024 BMI7结果';local_path=$baselineRoots[0].path;required_stage='0';status='available';years='2015-2024';spatial='0.1°, 0.5°, ADM1';scenario='historical';age_sex='age × sex';unit='BMI category proportions';notes='Frozen comparison baseline'},
-    [ordered]@{id='ncd_risc_bmi7';dataset='NCD-RisC国家-年份-年龄-性别BMI组成';local_path="$env:BMI_ROOT\data\肥胖\全球\NCD_RisC\国家-年份-年龄-性别肥胖";required_stage='3';status='available';years='1980-2024';spatial='country';scenario='historical';age_sex='age × sex';unit='proportion';notes='Historical seven-category anchor'},
+    [ordered]@{id='ncd_risc_bmi7';dataset='NCD-RisC国家-年份-年龄-性别BMI组成';local_path='$env:BMI_ROOT\data\肥胖\全球\NCD_RisC\国家-年份-年龄-性别肥胖';required_stage='3';status='available';years='1980-2024';spatial='country';scenario='historical';age_sex='age × sex';unit='proportion';notes='Historical seven-category anchor'},
     [ordered]@{id='gbd_adult_bmi_forecast';dataset='GBD 2021成人超重和肥胖预测机器可读表';local_path='';required_stage='3';status='missing_blocking';years='2022-2050';spatial='country';scenario='GBD reference';age_sex='25+ age × sex';unit='prevalence with 95% UI';notes='Paper located; machine-readable estimates not present locally'},
     [ordered]@{id='gbd_crc_total_forecast';dataset='GBD结直肠癌总发病、死亡和DALY历史及预测';local_path='';required_stage='9';status='missing_blocking';years='1990-2050';spatial='country';scenario='GBD reference/forecast';age_sex='age × sex';unit='counts, rates and 95% UI';notes='Cause-specific detailed extract required'},
     [ordered]@{id='gbd_crc_high_bmi';dataset='GBD结直肠癌高BMI归因发病、死亡和DALY';local_path='';required_stage='10-11';status='missing_blocking';years='historical and forecast where available';spatial='country';scenario='GBD';age_sex='age × sex';unit='attributable counts/rates and 95% UI';notes='Needed for comparison, not for independent validation if used as constraint'},
-    [ordered]@{id='local_gbd_2020';dataset='现有本地GBD高BMI聚合结果';local_path="$env:BMI_ROOT\data\GBD数据";required_stage='audit';status='available_not_sufficient';years='2020 only';spatial='country';scenario='historical';age_sex='aggregated';unit='attributable burden';notes='Three aggregate cause files; cannot support 1990-2050 CRC pipeline'},
+    [ordered]@{id='local_gbd_2020';dataset='现有本地GBD高BMI聚合结果';local_path='$env:BMI_ROOT\data\GBD数据';required_stage='audit';status='available_not_sufficient';years='2020 only';spatial='country';scenario='historical';age_sex='aggregated';unit='attributable burden';notes='Three aggregate cause files; cannot support 1990-2050 CRC pipeline'},
     [ordered]@{id='ssp_population_grid';dataset='SSP网格人口';local_path='';required_stage='2,4,6';status='missing_blocking';years='2010-2100 decadal';spatial='1/8° or source native';scenario='SSP1,SSP2,SSP3,SSP5';age_sex='total/urban-rural; age-sex if obtainable';unit='persons';notes='Must be harmonized to 0.1° then aggregated'},
     [ordered]@{id='ssp_population_country';dataset='SSP国家人口、城乡和年龄性别预测';local_path='';required_stage='2,3,6';status='missing_blocking';years='2020-2050';spatial='country';scenario='SSP1,SSP2,SSP3,SSP5';age_sex='age × sex';unit='persons or shares';notes='IIASA SSP database'},
     [ordered]@{id='ssp_gdp_grid';dataset='SSP网格GDP或人均GDP';local_path='';required_stage='2,4,6';status='missing_blocking';years='2030-2050';spatial='0.25° preferred';scenario='SSP1,SSP2,SSP3,SSP5';age_sex='none';unit='PPP currency per capita';notes='Bridge from 2024 historical GDP by ratio'},
     [ordered]@{id='cmip6_climate';dataset='NEX-GDDP-CMIP6温度和湿度';local_path='';required_stage='2,4,6';status='missing_blocking';years='2015-2050';spatial='0.25°';scenario='SSP126,SSP245,SSP370,SSP585';age_sex='none';unit='tas K/°C; hurs % or derivable humidity';notes='At least five GCMs; bias-correct against ERA5'},
-    [ordered]@{id='worldpop_historical';dataset='WorldPop年龄性别人口网格';local_path="$env:BMI_ROOT\data\人口结构网格数据";required_stage='2,5,6';status='available_partial';years='2006,2012-2025';spatial='1 km';scenario='historical';age_sex='age × sex';unit='persons';notes='Does not cover full 1990-2005 historical period'},
-    [ordered]@{id='historical_gdp_grid';dataset='Kummu等历史人均GDP网格';local_path="$env:BMI_ROOT\data\GDP网格数据";required_stage='2,4,5';status='available';years='1990-2024';spatial='5 arc-min';scenario='historical';age_sex='none';unit='PPP per capita';notes='Historical bridge source'},
-    [ordered]@{id='historical_pm25';dataset='ACAG SatPM2.5';local_path="$env:BMI_ROOT\data\PM2.5网格数据";required_stage='sensitivity';status='available_sensitivity_only';years='historical';spatial='source native';scenario='historical';age_sex='none';unit='µg/m³';notes='Excluded from future main model'},
-    [ordered]@{id='era5_temperature';dataset='ERA5 2m temperature';local_path="$env:BMI_ROOT\data\协变量数据\ERA5：温度";required_stage='2,4,5';status='available';years='historical';spatial='source native';scenario='historical';age_sex='none';unit='K/°C';notes='CMIP6 bias correction reference'},
-    [ordered]@{id='era5_humidity';dataset='ERA5 2m temperature and dewpoint humidity source';local_path="$env:BMI_ROOT\data\协变量数据\ERA5：湿度";required_stage='2,4,5';status='available';years='historical';spatial='source native';scenario='historical';age_sex='none';unit='K and derived RH %';notes='CMIP6 bias correction reference'},
-    [ordered]@{id='ghs_smod';dataset='GHS-SMOD城市化分类';local_path="$env:BMI_ROOT\data\城市化网格数据_GHS_SMOD";required_stage='2,4,5';status='available_partial';years='2005,2010,2015,2020';spatial='1 km';scenario='historical';age_sex='none';unit='settlement class';notes='Historical urbanization; future requires SSP-compatible source'},
-    [ordered]@{id='rr_workbook';dataset='BMI-疾病RR资料表';local_path="$env:BMI_ROOT\data\肥胖-疾病剂量反应关系\BMI_疾病关联.xlsx";required_stage='7-8';status='available_requires_crc_freeze';years='literature';spatial='none';scenario='none';age_sex='depends on study';unit='RR per 5 kg/m²';notes='CRC row must be selected and evidence/outcome aligned'},
-    [ordered]@{id='static_elevation';dataset='GMTED2010高程';local_path="$env:BMI_ROOT\data\协变量数据\GMTED2010：高程数据";required_stage='2,4,6';status='check_path';years='static';spatial='source native';scenario='static';age_sex='none';unit='metres';notes='Static future predictor'},
-    [ordered]@{id='static_accessibility';dataset='2015城市和港口交通时间';local_path="$env:BMI_ROOT\data\Travel time to cities and ports in the year 2015";required_stage='2,4,6';status='check_path';years='2015 static';spatial='~1 km';scenario='static';age_sex='none';unit='minutes';notes='Static future predictor'}
+    [ordered]@{id='worldpop_historical';dataset='WorldPop年龄性别人口网格';local_path='$env:BMI_ROOT\data\人口结构网格数据';required_stage='2,5,6';status='available_partial';years='2006,2012-2025';spatial='1 km';scenario='historical';age_sex='age × sex';unit='persons';notes='Does not cover full 1990-2005 historical period'},
+    [ordered]@{id='historical_gdp_grid';dataset='Kummu等历史人均GDP网格';local_path='$env:BMI_ROOT\data\GDP网格数据';required_stage='2,4,5';status='available';years='1990-2024';spatial='5 arc-min';scenario='historical';age_sex='none';unit='PPP per capita';notes='Historical bridge source'},
+    [ordered]@{id='historical_pm25';dataset='ACAG SatPM2.5';local_path='$env:BMI_ROOT\data\PM2.5网格数据';required_stage='sensitivity';status='available_sensitivity_only';years='historical';spatial='source native';scenario='historical';age_sex='none';unit='µg/m³';notes='Excluded from future main model'},
+    [ordered]@{id='era5_temperature';dataset='ERA5 2m temperature';local_path='$env:BMI_ROOT\data\协变量数据\ERA5：温度';required_stage='2,4,5';status='available';years='historical';spatial='source native';scenario='historical';age_sex='none';unit='K/°C';notes='CMIP6 bias correction reference'},
+    [ordered]@{id='era5_humidity';dataset='ERA5 2m temperature and dewpoint humidity source';local_path='$env:BMI_ROOT\data\协变量数据\ERA5：湿度';required_stage='2,4,5';status='available';years='historical';spatial='source native';scenario='historical';age_sex='none';unit='K and derived RH %';notes='CMIP6 bias correction reference'},
+    [ordered]@{id='ghs_smod';dataset='GHS-SMOD城市化分类';local_path='$env:BMI_ROOT\data\城市化网格数据_GHS_SMOD';required_stage='2,4,5';status='available_partial';years='2005,2010,2015,2020';spatial='1 km';scenario='historical';age_sex='none';unit='settlement class';notes='Historical urbanization; future requires SSP-compatible source'},
+    [ordered]@{id='rr_workbook';dataset='BMI-疾病RR资料表';local_path='$env:BMI_ROOT\data\肥胖-疾病剂量反应关系\BMI_疾病关联.xlsx';required_stage='7-8';status='available_requires_crc_freeze';years='literature';spatial='none';scenario='none';age_sex='depends on study';unit='RR per 5 kg/m²';notes='CRC row must be selected and evidence/outcome aligned'},
+    [ordered]@{id='static_elevation';dataset='GMTED2010高程';local_path='$env:BMI_ROOT\data\协变量数据\GMTED2010：高程数据';required_stage='2,4,6';status='check_path';years='static';spatial='source native';scenario='static';age_sex='none';unit='metres';notes='Static future predictor'},
+    [ordered]@{id='static_accessibility';dataset='2015城市和港口交通时间';local_path='$env:BMI_ROOT\data\Travel time to cities and ports in the year 2015';required_stage='2,4,6';status='check_path';years='2015 static';spatial='~1 km';scenario='static';age_sex='none';unit='minutes';notes='Static future predictor'}
 )
 
 $inventoryRows = foreach ($entry in $inventoryDefinitions) {

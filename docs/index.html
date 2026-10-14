@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global adiposity-associated disease risk, 2015–2050</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Global spatiotemporal distribution of adiposity-associated disease risk, 2015–2050</h1>
+  <p class="subtitle">Interactive results explorer — BMI and disease burden attributable to high BMI</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="bmi">BMI</button>
+  <button class="tab" data-tab="burden">Disease burden attributable to high BMI</button>
+</nav>
+
+<div class="controls" id="controls-bmi">
+  <label>Metric
+    <select id="bmi-metric">
+      <option value="meanbmi">Mean BMI</option>
+      <option value="obesity">Obesity prevalence (BMI ≥ 30)</option>
+    </select>
+  </label>
+  <label>Scenario
+    <select id="bmi-scenario"></select>
+  </label>
+  <label class="year-ctl">Year <span id="bmi-year-label" class="year-label">2050</span>
+    <input type="range" id="bmi-year" min="0" max="5" step="1" value="5">
+  </label>
+</div>
+
+<div class="controls hidden" id="controls-burden">
+  <label>Disease
+    <select id="burden-disease"></select>
+  </label>
+  <label>Measure
+    <select id="burden-measure">
+      <option value="deaths">Deaths</option>
+      <option value="dalys">DALYs</option>
+    </select>
+  </label>
+  <label>Scenario
+    <select id="burden-scenario"></select>
+  </label>
+  <label class="year-ctl">Year <span id="burden-year-label" class="year-label">2050</span>
+    <input type="range" id="burden-year" min="0" max="2" step="1" value="2">
+  </label>
+</div>
+
+<main>
+  <section class="map-pane">
+    <div id="map"></div>
+    <div class="legend"><div class="legend-gradient" id="legend-gradient"></div>
+      <div class="legend-ticks" id="legend-ticks"></div>
+      <div class="legend-label" id="legend-label"></div>
+    </div>
+    <p class="note" id="scenario-note">Maps show SSP2-4.5; the scenario selector applies to year 2050.</p>
+  </section>
+  <section class="chart-pane">
+    <div class="chart-head">
+      <span id="chart-title">Global</span>
+      <button id="reset-country">Reset to global</button>
+    </div>
+    <div id="chart"></div>
+    <p class="note">Solid: historical estimates (GBD 2021, 2015–2021). Coloured lines: projections under four SSP scenarios (2025–2050). Click a country on the map to view its trend.</p>
+  </section>
+</main>
+
+<footer>
+  <p>Data: GBD 2021 / GBD Foresight / NCD-RisC / IIASA SSP / CMIP6. Code: see the linked replication repository.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -13,8 +13,8 @@ param(
         'gate_D_historical_spatial_reconstruction'
     )]
     [string]$Gate = 'audit',
-    [string]$ConfigPath = "$env:BMI_ROOT\results\未来情景预测\01_input_inventory\future_input_paths_template_v2.json",
-    [string]$OutputRoot = "$env:BMI_ROOT\results\未来情景预测\01_input_inventory\data_gate_checks_v2"
+    [string]$ConfigPath = '$env:BMI_ROOT\results\未来情景预测\01_input_inventory\future_input_paths_template_v2.json',
+    [string]$OutputRoot = '$env:BMI_ROOT\results\未来情景预测\01_input_inventory\data_gate_checks_v2'
 )
 
 $ErrorActionPreference = 'Stop'

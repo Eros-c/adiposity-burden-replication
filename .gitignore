@@ -1,6 +1,7 @@
 # Data and pipeline outputs are not tracked (download per docs/DATA.md)
-data/
-results/
+# (repo-root only; docs/data/ holds the website's lightweight JSONs)
+/data/
+/results/
 *.tif
 *.tiff
 *.nc

@@ -6,7 +6,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$Root = "$env:BMI_ROOT\results\future_scenario_ascii\04_future_capable_mrp\phase4b_d1_reduced_demography_v1_20260831"
+$Root = '$env:BMI_ROOT\results\future_scenario_ascii\04_future_capable_mrp\phase4b_d1_reduced_demography_v1_20260831'
 $D1Script = Join-Path $Root 'scripts\phase4b_d1_mrp_task_v1.R'
 $ComparatorScript = Join-Path $Root 'scripts\phase4b_source_comparator_task_v1.R'
 $D1Stage = Join-Path $Root 'model_run_v1'
