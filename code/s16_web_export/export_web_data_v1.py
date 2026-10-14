@@ -18,7 +18,7 @@ from __future__ import annotations
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "config"))
-import paths as _cfg  # noqa: E402  # central path config (env-overridable)
+import paths as _cfg  # noqa: E402
 import json
 import sys
 from pathlib import Path
@@ -33,7 +33,7 @@ from affine import Affine
 from matplotlib.colors import LinearSegmentedColormap, PowerNorm
 from PIL import Image
 
-PROJECT = Path(_cfg.RESULTS)
+PROJECT = Path(r"D:\try\results\未来情景预测")
 ROOT = PROJECT / "12_figures" / "manuscript_bmi_2015_2050_unified_v1_20260909"
 OUT = ROOT / "web_v1"
 (OUT / "data").mkdir(parents=True, exist_ok=True)
@@ -51,7 +51,7 @@ FUT_GRID = (PROJECT / "06_future_bmi_2025_2050" / "full_covariate_annual_0p1deg_
             / "outputs")
 HIST_GRID = (PROJECT / "05_historical_bmi_1990_2024" / "historical_25plus_compat_v1_20260909"
              / "data" / "0p1deg")
-COUNTRIES_PATH = str(_cfg.DATA / "地图数据" / "ne_10m_admin_0_countries.zip")
+COUNTRIES_PATH = r"D:\try\data\地图数据\ne_10m_admin_0_countries.zip"
 
 DISEASES = [(441, "CRC", "Colorectal cancer"), (493, "IHD", "Ischemic heart disease"),
             (498, "HHD", "Hypertensive heart disease"), (976, "T2DM", "Type 2 diabetes mellitus")]
@@ -357,6 +357,22 @@ def export_bmi_global_trend():
     print("trends_bmi_global.json")
 
 
+def wrap_json_as_js():
+    """把 data/*.json 与 countries.geojson 包装为 .js（window.X = ...），
+    使网页在 file:// 下直接双击可开（fetch 在 file:// 被 CORS 拦截）。"""
+    wraps = {"meta.json": "META", "trends_bmi_national.json": "BMI_TRENDS",
+             "trends_bmi_global.json": "BMI_GLOBAL", "countries.geojson": "COUNTRIES"}
+    for _, code, _ in DISEASES:
+        wraps[f"trends_burden_{code}.json"] = f"BURDEN_{code}"
+    for fname, var in wraps.items():
+        p = OUT / "data" / fname
+        obj = json.loads(p.read_text(encoding="utf-8"))
+        (p.with_suffix(".js")).write_text(
+            f"window.{var} = " + json.dumps(obj, ensure_ascii=False, separators=(",", ":")) + ";\n",
+            encoding="utf-8")
+    print("js wrappers written")
+
+
 def main():
     countries = load_countries()
     export_countries_geojson(countries)
@@ -371,6 +387,7 @@ def main():
     export_bmi_maps()
     export_burden_maps()
     export_meta(countries)
+    wrap_json_as_js()
     print("DONE")
 
 

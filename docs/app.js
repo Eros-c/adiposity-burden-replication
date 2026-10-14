@@ -19,16 +19,22 @@ const state = {
 };
 
 /* ---------------- data loading ---------------- */
-async function loadJSON(path) {
-  const r = await fetch(path);
-  if (!r.ok) throw new Error("load failed: " + path);
-  return r.json();
+// 用 <script> 标签加载数据（window.X = {...}），file:// 与 http(s) 下都可用
+function loadData(src, globalName) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = () => window[globalName] !== undefined ? resolve(window[globalName])
+                                                     : reject(new Error("no data: " + src));
+    s.onerror = () => reject(new Error("load failed: " + src));
+    document.head.appendChild(s);
+  });
 }
 
 async function init() {
-  meta = await loadJSON("data/meta.json");
-  bmiTrends = await loadJSON("data/trends_bmi_national.json");
-  bmiGlobal = await loadJSON("data/trends_bmi_global.json");
+  meta = await loadData("data/meta.js", "META");
+  bmiTrends = await loadData("data/trends_bmi_national.js", "BMI_TRENDS");
+  bmiGlobal = await loadData("data/trends_bmi_global.js", "BMI_GLOBAL");
   initMap();
   initControls();
   initChart();
@@ -44,7 +50,7 @@ function initMap() {
   });
   map.fitBounds([[-58, -170], [82, 185]]);
   // 白底，无瓦片；仅国界
-  fetch("data/countries.geojson").then(r => r.json()).then(gj => {
+  loadData("data/countries.js", "COUNTRIES").then(gj => {
     countriesLayer = L.geoJSON(gj, {
       style: { color: "#9AA4AA", weight: 0.4, fill: true, fillColor: "#ffffff",
                fillOpacity: 0.01, interactive: true },
@@ -270,7 +276,7 @@ async function refreshChart() {
     renderChart(spec, "");
   } else {
     const code = state.burden.disease;
-    if (!burdenCache[code]) burdenCache[code] = await loadJSON(`data/trends_burden_${code}.json`);
+    if (!burdenCache[code]) burdenCache[code] = await loadData(`data/trends_burden_${code}.js`, `BURDEN_${code}`);
     const spec = burdenSeries(burdenCache[code]);
     const unit = state.burden.measure === "deaths" ? "Attributable deaths (millions)"
                                                    : "Attributable DALYs (millions)";
