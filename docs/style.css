@@ -20,7 +20,7 @@ header .subtitle { font-size: 13px; color: #747C80; margin-top: 4px; }
   display: flex; gap: 26px; align-items: center; flex-wrap: wrap;
   padding: 12px 32px; background: #fff; border-bottom: 1px solid #E3E7EA;
 }
-.controls.hidden { display: none; }
+.controls.hidden, .hidden { display: none; }
 .controls label { font-size: 12.5px; font-weight: 600; color: #3F464A; display: flex; align-items: center; gap: 8px; }
 .controls select {
   font-size: 12.5px; padding: 4px 8px; border: 1px solid #C9D2D8; border-radius: 4px;

@@ -27,11 +27,21 @@
       <option value="obesity">Obesity prevalence (BMI ≥ 30)</option>
     </select>
   </label>
+  <label>Sex
+    <select id="bmi-sex">
+      <option value="Both">Both</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+  </label>
+  <label>Age
+    <select id="bmi-age"></select>
+  </label>
   <label>Scenario
     <select id="bmi-scenario"></select>
   </label>
   <label class="year-ctl">Year <span id="bmi-year-label" class="year-label">2050</span>
-    <input type="range" id="bmi-year" min="0" max="5" step="1" value="5">
+    <input type="range" id="bmi-year" min="0" max="7" step="1" value="7">
   </label>
 </div>
 
@@ -45,11 +55,15 @@
       <option value="dalys">DALYs</option>
     </select>
   </label>
-  <label>Scenario
-    <select id="burden-scenario"></select>
+  <label>Sex
+    <select id="burden-sex">
+      <option value="Both">Both</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
   </label>
   <label class="year-ctl">Year <span id="burden-year-label" class="year-label">2050</span>
-    <input type="range" id="burden-year" min="0" max="2" step="1" value="2">
+    <input type="range" id="burden-year" min="0" max="6" step="1" value="6">
   </label>
 </div>
 
@@ -60,7 +74,7 @@
       <div class="legend-ticks" id="legend-ticks"></div>
       <div class="legend-label" id="legend-label"></div>
     </div>
-    <p class="note" id="scenario-note">Maps show SSP2-4.5; the scenario selector applies to year 2050.</p>
+    <p class="note" id="scenario-note">Maps show overall (both sexes, all ages) SSP2-4.5; sex/age selections apply to the trend chart. Burden maps for 2030–2045 interpolate the spatial pattern between 2025 and 2050 (national totals exact).</p>
   </section>
   <section class="chart-pane">
     <div class="chart-head">
@@ -68,7 +82,11 @@
       <button id="reset-country">Reset to global</button>
     </div>
     <div id="chart"></div>
-    <p class="note">Solid: historical estimates (GBD 2021, 2015–2021). Coloured lines: projections under four SSP scenarios (2025–2050). Click a country on the map to view its trend.</p>
+    <div id="chart-age-wrap" class="hidden">
+      <div class="chart-head"><span id="chart-age-title">Age profile, 2050</span></div>
+      <div id="chart-age"></div>
+    </div>
+    <p class="note">Solid grey: historical estimates (GBD 2021, 2015–2021; annualised). Dashed grey: transition, smoothed over four years (historical and projection products differ slightly in level; the seam is blended for display only). Blue: projection under SSP2-4.5. Click a country to view its trend. (BMI trend additionally shows all four SSP scenarios.)</p>
   </section>
 </main>
 
