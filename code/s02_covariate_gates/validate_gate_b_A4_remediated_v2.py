@@ -18,11 +18,9 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset
 
-
 SSPS = ("SSP1", "SSP2", "SSP3", "SSP5")
 TARGET_YEARS = tuple(range(2025, 2051))
 SSP_NATIVE_YEARS = tuple(range(2025, 2051, 5))
-
 
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
@@ -30,7 +28,6 @@ def sha256(path: Path) -> str:
         for block in iter(lambda: stream.read(8 * 1024 * 1024), b""):
             h.update(block)
     return h.hexdigest()
-
 
 def write_csv(path: Path, rows: list[dict], fieldnames: list[str] | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -40,7 +37,6 @@ def write_csv(path: Path, rows: list[dict], fieldnames: list[str] | None = None)
         writer = csv.DictWriter(stream, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
-
 
 def add_check(
     rows: list[dict], check_id: str, dataset_id: str, domain: str,
@@ -57,7 +53,6 @@ def add_check(
         "notes": notes,
     })
 
-
 def finite_nonnegative(values: np.ndarray) -> tuple[int, int, int, float, float]:
     array = np.asarray(values, dtype=float)
     finite = np.isfinite(array)
@@ -67,7 +62,6 @@ def finite_nonnegative(values: np.ndarray) -> tuple[int, int, int, float, float]
         float(valid.min()) if valid.size else math.nan,
         float(valid.max()) if valid.size else math.nan,
     )
-
 
 def inspect_a1(root: Path, checks: list[dict], contracts: list[dict]) -> dict:
     base = root / "ssp_country" / "IIASA_Basic_Drivers_2025"
@@ -122,7 +116,6 @@ def inspect_a1(root: Path, checks: list[dict], contracts: list[dict]) -> dict:
         },
     ])
     return {"gdp_path": gdp_path, "pop_path": pop_path, "gdp": gdp, "pop": pop}
-
 
 def inspect_a2(root: Path, crosswalk_path: Path, a1: dict, checks: list[dict], contracts: list[dict]) -> dict:
     base = root / "ssp_country" / "IIASA_Basic_Drivers_2025" / "WIC_age_sex" / "V14"
@@ -195,7 +188,6 @@ def inspect_a2(root: Path, crosswalk_path: Path, a1: dict, checks: list[dict], c
         "summary": summary,
     }
 
-
 def inspect_netcdf(root: Path, nc_json_path: Path, checks: list[dict], contracts: list[dict]) -> dict:
     info = json.loads(nc_json_path.read_text(encoding="utf-8"))
     a3 = [x for x in info if "ssp_grid_population" in x["path"]]
@@ -217,7 +209,6 @@ def inspect_netcdf(root: Path, nc_json_path: Path, checks: list[dict], contracts
               "PASS" if a3_ok else "FAIL", f"files={len(a3)}; years=2006-2100 annual; units=number_of_people=1; _FillValue=1e20", True)
     add_check(checks, "A3.03", "A3", "spatial", "CRS/extent and global grid explicit",
               "PASS" if len(set(extents)) == 1 else "FAIL", f"extent={extents[0] if extents else None}; 2.5 arc-min regular lon/lat grid; WGS84 geographic convention", True)
-    # Deterministic systematic sample across every target year. This is a gate QA,
     # not a regridding or harmonization operation.
     sampled = 0
     negative = 0
@@ -275,7 +266,6 @@ def inspect_netcdf(root: Path, nc_json_path: Path, checks: list[dict], contracts
         })
     return {"a3": a3, "a8": a8}
 
-
 def inspect_rasters(
     root: Path, raster_json_path: Path, a4_audit_path: Path,
     checks: list[dict], contracts: list[dict]
@@ -304,7 +294,6 @@ def inspect_rasters(
     spatial_ok = bool(target_items) and all(item["crs"] == "EPSG:4326" and item["bounds"] == [-180.0, -90.0, 180.0, 90.0] for item in target_items)
     add_check(checks, "A4.02", "A4", "spatial", "CRS and global extent explicit", "PASS" if spatial_ok else "FAIL",
               "EPSG:4326; 0.25 degree; 1440x720; extent -180,-90,180,90", True)
-    # Unit and zero semantics are documented by the official 2023 release, even
     # though the local GeoTIFFs do not embed unit or NoData tags.
     add_check(checks, "A4.03", "A4", "units_nodata", "Units and NoData are explicit through traceable documentation",
               "WARN", "unit=PPP 2005 international dollars (external provider documentation); nodata_tag=none/not embedded; provider zeros represent Antarctica, ocean, and some non-illuminated or depopulated cells", False,
@@ -378,7 +367,6 @@ def inspect_rasters(
     })
     return info
 
-
 def inspect_cmip6(cmip_dir: Path, checks: list[dict], contracts: list[dict]) -> dict:
     group = pd.read_csv(cmip_dir / "cmip6_group_time_qa.csv")
     fileqa = pd.read_csv(cmip_dir / "cmip6_netcdf_file_qa.csv")
@@ -419,7 +407,6 @@ def inspect_cmip6(cmip_dir: Path, checks: list[dict], contracts: list[dict]) -> 
     })
     return {"groups": group, "fileqa": fileqa, "report": report}
 
-
 def build_coverage_rows(a2: dict) -> list[dict]:
     rows = []
     for iso3 in sorted(a2["coverage"]["a1"] | a2["coverage"]["a2"]):
@@ -430,7 +417,6 @@ def build_coverage_rows(a2: dict) -> list[dict]:
             "coverage_class": "both" if iso3 in a2["coverage"]["a1"] and iso3 in a2["coverage"]["a2"] else ("A1_only" if iso3 in a2["coverage"]["a1"] else "A2_only"),
         })
     return rows
-
 
 def report_markdown(checks: list[dict], contracts: list[dict], coverage_rows: list[dict], run_dir: Path) -> str:
     blocking_fail = [r for r in checks if r["status"] == "FAIL" and r["blocking"] == "TRUE"]
@@ -484,7 +470,6 @@ def report_markdown(checks: list[dict], contracts: list[dict], coverage_rows: li
         "",
     ]
     return "\n".join(lines)
-
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Read-only Phase 1 Gate B data-contract validation.")
@@ -544,7 +529,6 @@ def main() -> int:
         "output_dir": str(args.output_dir),
     }, ensure_ascii=False, indent=2))
     return 2 if blocking_fail else 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Freeze the full-covariate extension and write auditable gate artifacts."""
 
 from __future__ import annotations

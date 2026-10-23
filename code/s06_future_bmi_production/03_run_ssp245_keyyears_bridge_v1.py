@@ -1,8 +1,4 @@
-"""Run the reference-path bridge for main-text SSP2-4.5 key years.
-
-The controller is local, serial and restartable. Existing outputs are skipped
-only when their per-year bridge summary is PASS.
-"""
+"""Run the reference-path bridge for main-text SSP2-4.5 key years."""
 from __future__ import annotations
 import sys as _sys
 from pathlib import Path as _Path

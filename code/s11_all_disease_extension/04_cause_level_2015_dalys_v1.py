@@ -1,12 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""2015 per-cause 0.1-degree attributable-DALYs rasters for the Figure-4
-top-4 diseases (IHD 493, HHD 498, T2DM 976, Stroke 494).
-
-Same allocation as the combined-23 product (national attributable x w(cell)/w(country)
-with saved pop x PAF weights), limited to four causes and the Deaths measure.
-Output: burden_density_2015_v1/data/burden_density_c{cid}_dalys_ssp245_2015_0p1deg_v1.tif
-"""
+"""2015 per-cause 0.1-degree attributable-DALYs rasters for the Figure-4"""
 
 from __future__ import annotations
 

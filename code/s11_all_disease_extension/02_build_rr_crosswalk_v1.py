@@ -1,23 +1,4 @@
-#!/usr/bin/env python3
-"""Build the dose-response relative-risk crosswalk for 33 adiposity-associated causes.
-
-Input: BMI_disease_RR_source_v1.xlsx (sheet GBD完整主表), frozen in the Phase-1 contracts.
-Output grain: cause_id x sex x age_group, with the RR per +5 kg/m2, its 95% CI,
-the study reference BMI, the sex/age scope, a condition flag and the source.
-A second table expands each row to the seven BMI categories using the same
-log-linear rule as the CRC analysis (RR = 1 at or below the reference).
-
-Special cases (documented in the QA report for mentor review):
-  - 441 CRC: sex-specific WCRF/AICR values (Male 1.08, Female 1.05), identical to
-    the frozen CRC crosswalk so the published CRC results are reproduced exactly.
-  - 429 breast cancer: menopause split, premenopausal (25-49y) 0.95, postmenopausal
-    (50+y) 1.14; female only.
-  - 498 hypertensive heart disease: six age-specific RRs from Singh et al. 2013;
-    25-34y carries the 35-44y estimate (nearest-band extension, flagged).
-  - 418/419/420 liver cancer subtypes: RR applies only at BMI >= 25 (reference 25.0).
-  - 453 gallbladder and biliary tract cancer: three subtype-specific values exist;
-    the gallbladder value 1.27 (1.23-1.32) is applied to the GBD aggregate cause.
-"""
+"""Build the dose-response relative-risk crosswalk for 33 adiposity-associated causes."""
 
 from __future__ import annotations
 
@@ -88,7 +69,6 @@ CAUSE_GROUPS = {
     515: "Other", 534: "Other", 543: "Other",
 }
 
-# Explicit multi-value causes (RR per +5 kg/m2 [lower, upper]).
 SPECIAL = {
     441: {
         "kind": "sex_specific",
@@ -141,7 +121,6 @@ SPECIAL = {
     },
 }
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -149,11 +128,9 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
-
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-
 
 def numeric(value) -> float | None:
     try:
@@ -161,14 +138,12 @@ def numeric(value) -> float | None:
     except (TypeError, ValueError):
         return None
 
-
 def expand_categories(rr: float, lower: float, upper: float, reference: float) -> list[tuple]:
     rows = []
     for key, label, rep in BMI_CATEGORIES:
         exponent = max(rep - reference, 0.0) / 5.0
         rows.append((key, label, rep, rr**exponent, lower**exponent, upper**exponent))
     return rows
-
 
 def main() -> None:
     diseases = pd.read_csv(DISEASE_LIST, encoding="utf-8-sig")
@@ -385,7 +360,6 @@ def main() -> None:
         f"rr_crosswalk_v1_20261005 completed {summary['completed_at_utc']}\n", encoding="utf-8"
     )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
-
 
 if __name__ == "__main__":
     main()

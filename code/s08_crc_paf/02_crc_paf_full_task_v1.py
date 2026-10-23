@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """One scenario-year task for full annual four-SSP CRC PAF production."""
 
 from __future__ import annotations

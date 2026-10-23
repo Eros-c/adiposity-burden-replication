@@ -1,20 +1,4 @@
-#!/usr/bin/env python3
-"""Grid PAF and pop-x-PAF weight rasters for all 23 headline causes.
-
-Method (approved by PI): spatial disease burden = high-resolution PAF x
-high-resolution population. Per 0.1-degree cell the weight is
-    w(cell) = sum over sex-age slices of pop_sa(cell) x PAF_sa(cell)
-and the display PAF is w / pop. National attributable deaths/DALYs are then
-allocated to cells in proportion to w.
-
-Slice order in the production rasters:
-  probability_age_sex: 210 bands = (sex x 15 ages) x 7 categories,
-    name pattern "Female__25_29__bmi_lt_18_5"
-  population_age_sex: 30 bands = sex x 15 ages, "Female__25_29__population"
-
-RR per cause x sex x age comes from the Phase-2 crosswalk. Output per cause
-and year: display PAF raster (percent) and weight raster w (pop x PAF).
-"""
+"""Grid PAF and pop-x-PAF weight rasters for all 23 headline causes."""
 
 from __future__ import annotations
 

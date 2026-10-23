@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Independent QA for the 2025-2050 national BMI7 anchor product."""
 
 from __future__ import annotations

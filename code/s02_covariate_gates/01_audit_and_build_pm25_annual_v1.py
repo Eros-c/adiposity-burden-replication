@@ -1,12 +1,4 @@
-#!/usr/bin/env python3
-"""Audit NorESM2-LM PM2.5 mass mixing ratio and build annual surface fields.
-
-The supplied variable is a dry-aerosol mass fraction (kg kg-1), not ambient
-surface concentration (ug m-3).  We therefore retain its physical definition,
-select the lowest hybrid model layer, scale it to ug kg-1 for numerical
-stability, and refit the BMI model rather than reusing the old PM2.5
-concentration coefficient.
-"""
+"""Audit NorESM2-LM PM2.5 mass mixing ratio and build annual surface fields."""
 
 from __future__ import annotations
 
@@ -24,7 +16,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-
 EXPECTED = {
     "historical": [(1990, 1999), (2000, 2009), (2010, 2014)],
     "ssp126": [(2015, 2020), (2021, 2030), (2031, 2040), (2041, 2050)],
@@ -38,14 +29,12 @@ FILE_RE = re.compile(
     r"(\d{4})\d{2}-(\d{4})\d{2}\.nc$"
 )
 
-
 def sha256(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
         for chunk in iter(lambda: f.read(8 * 1024 * 1024), b""):
             h.update(chunk)
     return h.hexdigest()
-
 
 def annual_surface(path: Path) -> xr.DataArray:
     ds = xr.open_dataset(path, decode_times=False)
@@ -62,7 +51,6 @@ def annual_surface(path: Path) -> xr.DataArray:
         if surface_i != 0 or not np.isclose(lev[surface_i], 0.992556095123291):
             raise RuntimeError(f"Unexpected surface level in {path.name}: {lev[surface_i]}")
 
-        # Monthly cell means are weighted by the exact no-leap interval length.
         bounds = np.asarray(ds["time_bnds"].values)
         weights = bounds[:, 1] - bounds[:, 0]
         m = FILE_RE.match(path.name)
@@ -93,12 +81,10 @@ def annual_surface(path: Path) -> xr.DataArray:
     finally:
         ds.close()
 
-
 def normalize_grid(a: xr.DataArray) -> xr.DataArray:
     lon = ((a.lon + 180) % 360) - 180
     a = a.assign_coords(lon=lon).sortby("lon")
     return a.sortby("lat", ascending=False)
-
 
 def write_dataset(a: xr.DataArray, path: Path, attrs: dict) -> None:
     if path.exists():
@@ -107,7 +93,6 @@ def write_dataset(a: xr.DataArray, path: Path, attrs: dict) -> None:
     ds.attrs.update(attrs)
     encoding = {a.name: {"zlib": True, "complevel": 5, "dtype": "float32"}}
     ds.to_netcdf(path, encoding=encoding)
-
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -245,7 +230,6 @@ def main() -> int:
     )
     print(json.dumps({"status": "PASS", "input_files": len(files), "output_dir": str(data_dir)}))
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

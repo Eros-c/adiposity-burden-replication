@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Read-only audit of CRC dose-response, GBD burden, and BMI products."""
 
 from __future__ import annotations

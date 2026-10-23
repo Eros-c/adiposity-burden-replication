@@ -1,17 +1,4 @@
-#!/usr/bin/env python3
-"""Attributable burden and GBD benchmark for 33 adiposity-associated causes.
-
-Future (2025-2050, four SSPs): scenario-specific study PAF x common GBD Foresight
-reference burden. Historical (2015-2021): study PAF x GBD 2021 total burden,
-benchmarked against official GBD high-BMI attributable estimates.
-
-Regression gates:
-  - future CRC country-year-measure attributable must match the frozen CRC
-    burden table (09_colorectal_cancer_burden) within 1e-6 relative tolerance;
-  - historical CRC country-year series is compared with benchmark v2 (soft gate,
-    small differences expected because the harmonized inputs come from a fresh
-    GBD download round).
-"""
+"""Attributable burden and GBD benchmark for 33 adiposity-associated causes."""
 
 from __future__ import annotations
 
@@ -68,7 +55,6 @@ GBD_AGE_TO_ANCHOR = {"85-89": "85+", "90-94": "85+", "95+": "85+"}
 MEASURE_IDS = {"Deaths": 1, "DALYs": 2}
 REGRESSION_RTOL = 1e-6
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -76,26 +62,21 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
-
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-
 
 def load_foresight() -> pd.DataFrame:
     frame = pd.read_parquet(HARMONIZED / "gbd_foresight_reference_harmonized_v1.parquet")
     return frame[frame["year"].isin(FUTURE_YEARS)].copy()
 
-
 def load_total() -> pd.DataFrame:
     frame = pd.read_parquet(HARMONIZED / "gbd_total_burden_harmonized_v1.parquet")
     return frame[frame["year"].isin(HISTORICAL_YEARS) & (frame["metric"] == "Number")].copy()
 
-
 def load_official() -> pd.DataFrame:
     frame = pd.read_parquet(HARMONIZED / "gbd_high_bmi_attributable_harmonized_v1.parquet")
     return frame[frame["year"].isin(HISTORICAL_YEARS) & (frame["metric"] == "Number")].copy()
-
 
 def future_burden_one_scenario(foresight: pd.DataFrame, scenario: str) -> dict[str, pd.DataFrame]:
     paf = pd.read_parquet(PAF_DIR / f"paf_future_{scenario}_2025_2050_all_causes_v1.parquet")
@@ -143,7 +124,6 @@ def future_burden_one_scenario(foresight: pd.DataFrame, scenario: str) -> dict[s
         "age_sex_2050": age_sex_2050,
     }
 
-
 def crc_future_regression(country_overall_all: pd.DataFrame) -> dict:
     frozen = pd.read_csv(CRC_FROZEN_OVERALL, encoding="utf-8-sig")
     mine = country_overall_all[country_overall_all["cause_id"] == 441].copy()
@@ -166,7 +146,6 @@ def crc_future_regression(country_overall_all: pd.DataFrame) -> dict:
         "max_rel_diff": float(rel),
         "status": "PASS" if len(pair) == len(frozen) and rel <= REGRESSION_RTOL else "FAIL",
     }
-
 
 def historical_benchmark(total: pd.DataFrame, official: pd.DataFrame) -> dict[str, pd.DataFrame]:
     paf = pd.read_parquet(PAF_DIR / "paf_historical_2015_2024_all_causes_v1.parquet")
@@ -209,7 +188,6 @@ def historical_benchmark(total: pd.DataFrame, official: pd.DataFrame) -> dict[st
     )
     return {"detail": detail}
 
-
 def benchmark_metrics(detail: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for (cause_id, measure), group in detail.groupby(["cause_id", "measure"], observed=True):
@@ -234,7 +212,6 @@ def benchmark_metrics(detail: pd.DataFrame) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
-
 
 def crc_historical_regression(detail: pd.DataFrame) -> dict:
     v2 = pd.read_csv(CRC_BENCHMARK_V2, encoding="utf-8-sig")
@@ -261,7 +238,6 @@ def crc_historical_regression(detail: pd.DataFrame) -> dict:
         out[f"median_rel_diff_{tag}"] = float(rel.median())
     out["note"] = "soft gate; fresh GBD download round explains small differences"
     return out
-
 
 def main() -> None:
     diseases = pd.read_csv(DISEASE_LIST, encoding="utf-8-sig")
@@ -340,7 +316,6 @@ def main() -> None:
 
     regression_historical = crc_historical_regression(benchmark)
 
-    # Continuous total-burden series 2015-2050 (reference pathway).
     total_cont = total[["cause_id", "location_id", "iso3", "crosswalk_location_name", "year", "age_group", "sex", "measure", "value", "lower", "upper"]]
     fore_cont = foresight[["cause_id", "location_id", "iso3", "crosswalk_location_name", "year", "age_group", "sex", "measure", "value", "lower", "upper"]]
     continuous = pd.concat([total_cont, fore_cont], ignore_index=True)
@@ -419,7 +394,6 @@ def main() -> None:
         f"burden_benchmark_v1_20261005 completed {summary['completed_at_utc']}\n", encoding="utf-8"
     )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
-
 
 if __name__ == "__main__":
     main()

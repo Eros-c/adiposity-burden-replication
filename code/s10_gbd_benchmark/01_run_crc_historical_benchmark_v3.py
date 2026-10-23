@@ -1,14 +1,4 @@
-#!/usr/bin/env python3
-"""Rebuild the CRC historical benchmark (2015-2021) on GBD 2021 data.
-
-The v1/v2 benchmark used GBD 2023 downloads (camoufox exports); this v3 run
-recomputes the same tables from the harmonized GBD 2021 inputs
-(11_all_disease_extension Phase 1) and the Phase 3 historical PAF, which is
-GBD-version independent (verified identical to v1 study_paf within 5e-12).
-
-Outputs use the v1 table schemas so downstream scripts (S8 figure, Figure 3
-donut prep, Figure 4 velocity prep) can swap paths without code changes.
-"""
+"""Rebuild the CRC historical benchmark (2015-2021) on GBD 2021 data."""
 
 from __future__ import annotations
 
@@ -49,7 +39,6 @@ SEX_IDS = {"Male": 1, "Female": 2}
 MEASURE_IDS = {"Deaths": 1, "DALYs": 2}
 GBD_AGE_TO_ANCHOR = {"85-89": "85+", "90-94": "85+", "95+": "85+"}
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -57,11 +46,9 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
-
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-
 
 def metrics_block(source: pd.DataFrame, measure: str) -> dict:
     frame = source[source["measure"].eq(measure)].copy()
@@ -96,7 +83,6 @@ def metrics_block(source: pd.DataFrame, measure: str) -> dict:
         "aggregate_study_to_official_ratio": float(y.sum() / x.sum()),
     }
 
-
 def main() -> None:
     total = pd.read_parquet(HARMONIZED / "gbd_total_burden_harmonized_v1.parquet")
     total = total[(total["cause_id"] == CAUSE_ID) & total["year"].isin(YEARS) & (total["metric"] == "Number")].copy()
@@ -115,8 +101,6 @@ def main() -> None:
         how="left",
         validate="many_to_one",
     )
-    # Five small GBD locations have no NCD-RisC anchor (GUM/MCO/MNP/SMR/VIR);
-    # v1 excluded them too (1393 country-year points = 199 locations x 7 years).
     excluded = sorted(merged.loc[merged["paf"].isna(), "iso3"].unique().tolist())
     merged = merged[merged["paf"].notna()].copy()
     merged = merged.merge(
@@ -213,7 +197,6 @@ def main() -> None:
         f"v3 benchmark completed {summary['completed_at_utc']}\n", encoding="utf-8"
     )
     print(metrics.to_string(index=False))
-
 
 if __name__ == "__main__":
     main()

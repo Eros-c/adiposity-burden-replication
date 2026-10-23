@@ -1,17 +1,4 @@
-#!/usr/bin/env python3
-"""Aggregate sex-specific global population-weighted BMI metrics (2015-2050).
-
-Builds the annual sex-specific trend series needed by the revised Figure 2
-panels A-C (SSP2-4.5 overall + female + male), from the frozen products:
-
-- Historical key years 2015/2020/2024: harmonized 25+ sex-age 0.1-degree
-  products (seven-category proportions per sex-age cell + sex-age population).
-- SSP2-4.5 2025-2050: probability_sex and population_sex 0.1-degree products.
-
-Output: tables/Figure2_sex_trend_source_v1.csv (year, period, sex, population,
-mean_bmi, bmi_ge25, bmi_ge30) and a consistency check against the existing
-overall trend source (TEST_Fig1A_trend_source_four_SSP_v2.csv).
-"""
+"""Aggregate sex-specific global population-weighted BMI metrics (2015-2050)."""
 
 from __future__ import annotations
 
@@ -35,11 +22,9 @@ MIDPOINTS = np.asarray([17.0, 19.25, 22.5, 27.5, 32.5, 37.5, 42.5], dtype=np.flo
 CAT_STEMS = ["bmi_lt18p5", "bmi_18p5_to_lt20", "bmi_20_to_lt25", "bmi_25_to_lt30", "bmi_30_to_lt35", "bmi_35_to_lt40", "bmi_ge40"]
 SEXES = ("Female", "Male")
 
-
 def masked_window(dataset, band, row0, row1):
     window = rasterio.windows.Window(0, row0, dataset.width, row1 - row0)
     return dataset.read(band, window=window, masked=True)
-
 
 def aggregate_historical_year(year: int) -> dict:
     rows = {}
@@ -60,7 +45,6 @@ def aggregate_historical_year(year: int) -> dict:
                 male_pop = pop[13:].sum(axis=0)
                 for cat_index, cat_ds in enumerate(cats):
                     cat = masked_window(cat_ds, list(range(1, 27)), row0, row1).astype(np.float64)
-                    # historical sex-age category files are uint16 basis points (0-10000)
                     cat = cat / 10000.0
                     for sex_name, sex_slice, sex_pop in (
                         ("Female", slice(0, 13), female_pop),
@@ -87,7 +71,6 @@ def aggregate_historical_year(year: int) -> dict:
             "bmi_ge30": float(shares[4:].sum() * 100.0),
         }
     return result
-
 
 def aggregate_future_year(year: int) -> dict:
     prob_path = FUT / str(year) / f"probability_sex_ssp245_{year}_0p1deg_v1.tif"
@@ -120,7 +103,6 @@ def aggregate_future_year(year: int) -> dict:
             "bmi_ge30": float(shares[4:].sum() * 100.0),
         }
     return result
-
 
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
@@ -173,7 +155,6 @@ def main() -> int:
     print("QA", json.dumps(qa, ensure_ascii=False))
     print("WROTE", csv_path)
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -1,10 +1,4 @@
-"""Build a non-destructive 2025 SSP2-4.5 national-anchor bridge pilot.
-
-The pilot retains the official 0.1-degree population and MRP spatial gradient,
-then rakes each country-by-sex-by-age composition to the Phase 3
-``ncd_2024_delta_sensitivity`` target.  It is a continuity sensitivity output,
-not a replacement for the frozen absolute-GBD production product.
-"""
+"""Build a non-destructive 2025 SSP2-4.5 national-anchor bridge pilot."""
 
 from __future__ import annotations
 
@@ -23,7 +17,6 @@ import numpy as np
 import pandas as pd
 import rasterio
 
-
 ROOT = Path(_cfg.ROOT / "future_scenario_ascii" / "06_future_bmi_2025_2050" / "bridge_ncd2024_gbdtrend_sensitivity_v1_20260909")
 FORMAL = Path(_cfg.ROOT / "future_scenario_ascii" / "06_future_bmi_2025_2050" / "full_covariate_annual_0p1deg_production_v1_20260906" / "outputs" / "ssp245" / "2025")
 PHASE3 = Path(_cfg.ROOT / "future_scenario_ascii" / "03_national_bmi_anchors" / "phase3_national_bmi7_anchors_v2_20260828_144604" / "tables" / "national_bmi7_anchors_2025_2050_v1.csv.gz")
@@ -38,15 +31,10 @@ EPS = 1e-12
 BMI = ("bmi_lt_18_5", "bmi_18_5_20", "bmi_20_25", "bmi_25_30", "bmi_30_35", "bmi_35_40", "bmi_ge_40")
 SEXES = ("Female", "Male")
 AGES = ("25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90-94", "95+")
-# The ADM1 boundary product and the Phase 3 GBD anchor file use different
-# codes for these three represented locations. This mapping is exact and is
-# retained in the QA artefacts rather than silently filling an anchor.
 ANCHOR_TO_GRID_ISO3 = {"PSE": "PSX", "SSD": "SDS"}
-
 
 def utc() -> str:
     return datetime.now(timezone.utc).isoformat()
-
 
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -55,24 +43,20 @@ def sha256(path: Path) -> str:
             digest.update(chunk)
     return digest.hexdigest()
 
-
 def write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     os.replace(temporary, path)
 
-
 def normalize_age(value: str) -> str:
     return str(value).replace(" to ", "-").replace(" plus", "+")
-
 
 def source_paths() -> tuple[Path, Path]:
     return (
         FORMAL / "probability_age_sex_ssp245_2025_0p1deg_v1.tif",
         FORMAL / "population_age_sex_ssp245_2025_0p1deg_v1.tif",
     )
-
 
 def descriptions(family: str) -> list[str]:
     if family == "probability_age_sex":
@@ -84,7 +68,6 @@ def descriptions(family: str) -> list[str]:
     if family == "probability_overall":
         return list(BMI)
     raise KeyError(family)
-
 
 def write_dataset(path: Path, count: int, descriptions_: list[str], profile: dict) -> rasterio.io.DatasetWriter:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -107,10 +90,8 @@ def write_dataset(path: Path, count: int, descriptions_: list[str], profile: dic
     )
     return dataset
 
-
 def finalize_dataset(staging: Path, output: Path) -> None:
     os.replace(staging, output)
-
 
 def build_target_cube(country_codes: list[str], required_country_index: np.ndarray) -> tuple[np.ndarray, list[dict[str, str]]]:
     usecols = ["anchor_scenario", "location_name", "iso3", "sex", "age_group_name", "year", *[f"p_{x}" for x in BMI]]
@@ -139,7 +120,6 @@ def build_target_cube(country_codes: list[str], required_country_index: np.ndarr
     ]
     return target, mapping_audit
 
-
 def load_country_index() -> tuple[np.ndarray, list[str]]:
     lookup = pd.read_csv(ZONE_LOOKUP, usecols=["zone_id", "adm0_a3"])
     country_codes = sorted(lookup.adm0_a3.dropna().unique().tolist())
@@ -156,7 +136,6 @@ def load_country_index() -> tuple[np.ndarray, list[str]]:
         country_grid = np.full(zone.shape, -1, dtype=np.int32)
         country_grid[valid_zone] = zone_map[zone[valid_zone]]
     return country_grid.reshape(-1), country_codes
-
 
 def rake_country(probability: np.ndarray, population: np.ndarray, country: np.ndarray, target: np.ndarray) -> tuple[np.ndarray, int, float, int]:
     valid = np.isfinite(population) & (population > 0) & (country >= 0) & np.all(np.isfinite(probability), axis=0)
@@ -184,7 +163,6 @@ def rake_country(probability: np.ndarray, population: np.ndarray, country: np.nd
             probability[:, valid] = values.astype(np.float32)
             return probability, iteration, error, unassigned
     raise RuntimeError(f"Country rake did not converge: {error:.3e}")
-
 
 def main() -> int:
     started = utc()
@@ -231,7 +209,6 @@ def main() -> int:
         finally:
             datasets["probability_age_sex"].close()
 
-    # Derive age, sex and overall families from raked age-sex composition and the canonical population COG.
     with rasterio.open(output_paths["probability_age_sex"].with_suffix(".tif.staging")) as raked, rasterio.open(source_population) as population_source:
         profile = raked.profile
         for family in ("probability_age", "probability_sex", "probability_overall"):
@@ -279,7 +256,6 @@ def main() -> int:
     write_json(qa_dir / f"{SCENARIO_CODE}_{YEAR}_bridge_summary_v1.json", {"status": "PASS_BRIDGE_PILOT" if maximum_error <= 1e-8 else "FAIL", "started_at_utc": started, "completed_at_utc": utc(), "scenario": SCENARIO, "year": YEAR, "maximum_country_target_error": maximum_error, "source_probability": str(source_probability), "canonical_population_source": str(source_population), "anchor_scenario": "ncd_2024_delta_sensitivity", "iso3_mapping_audit": mapping_audit, "outputs": inventory})
     print("BRIDGE_PILOT_PASS")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

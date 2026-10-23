@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Independent, file-level QA for the full-covariate 0.1-degree pilot."""
 
 from __future__ import annotations

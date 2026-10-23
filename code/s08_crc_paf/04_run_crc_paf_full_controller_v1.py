@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Resumable local controller for 104 CRC PAF scenario-year tasks."""
 
 from __future__ import annotations

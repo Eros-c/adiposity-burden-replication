@@ -1,14 +1,4 @@
-#!/usr/bin/env python3
-"""Allocate national attributable burden to 0.1-degree cells via pop x PAF weights.
-
-burden_cell(cause, year, measure) = national_attributable x w(cell) / w(country)
-
-Produces:
-  - per-cause burden-density rasters (deaths and DALYs), 2025 and 2050
-  - combined 23-cause burden-density rasters
-  - country-level closure QA: sum of cells must equal the national attributable
-  - validation: country-level sum(w) vs attributable deaths (Pearson r, R2)
-"""
+"""Allocate national attributable burden to 0.1-degree cells via pop x PAF weights."""
 
 from __future__ import annotations
 
@@ -44,7 +34,6 @@ HELPER_SCRIPT = (PROJECT / "12_figures" / "manuscript_bmi_2015_2050_unified_v1_2
 YEARS = (2025, 2050)
 MEASURES = ("Deaths", "DALYs")
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -52,11 +41,9 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
-
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-
 
 def import_helper():
     spec = importlib.util.spec_from_file_location("burden_helper", HELPER_SCRIPT)
@@ -65,9 +52,7 @@ def import_helper():
     spec.loader.exec_module(module)
     return module.historical
 
-
 historical = import_helper()
-
 
 def country_zones(shape, transform):
     countries = historical.gpd.read_file(historical.COUNTRY_PATH, engine="pyogrio")
@@ -79,7 +64,6 @@ def country_zones(shape, transform):
     shapes = [(g, ids[i]) for g, i in zip(countries.geometry, countries["iso3"]) if i in ids]
     zones = rasterize(shapes, out_shape=shape, transform=transform, fill=-1, dtype="int32")
     return zones, keys
-
 
 def allocate_year(year: int, burden: pd.DataFrame, causes: list[int]) -> tuple[dict, pd.DataFrame, list[Path]]:
     combined = {m: None for m in MEASURES}
@@ -109,8 +93,6 @@ def allocate_year(year: int, burden: pd.DataFrame, causes: list[int]) -> tuple[d
                 # Natural Earth uses PSX/SDS; the GBD crosswalk uses PSE/SSD.
                 nat_lookup[i] = nat.get({"PSX": "PSE", "SDS": "SSD"}.get(iso, iso), 0.0)
             # Renormalise per country so the grid allocation conserves the
-            # national attributable burden exactly. Negative country weight
-            # sums are legitimate (breast cancer premenopausal protective RR
             # in young-age-heavy populations) and are kept, not dropped.
             cell_share = np.zeros(len(wflat))
             idx_z = zflat[sel]
@@ -133,10 +115,6 @@ def allocate_year(year: int, burden: pd.DataFrame, causes: list[int]) -> tuple[d
             )
             combined[measure] = (cell_burden if combined[measure] is None
                                  else np.nansum([combined[measure], cell_burden], axis=0))
-            # closure QA: per-country the allocation conserves national burden
-            # exactly for countries with rasterized weight; countries whose
-            # 0.1-degree production rasters carry nodata (small islands and
-            # city-states masked out of the BMI grid) have no cells and are
             # reported separately rather than silently dropped.
             nat_covered = float(nat_lookup[allocated_by_country != 0].sum())
             nat_dropped = float(nat_lookup[allocated_by_country == 0].sum())
@@ -168,7 +146,6 @@ def allocate_year(year: int, burden: pd.DataFrame, causes: list[int]) -> tuple[d
             ds.set_band_description(1, f"combined 23-cause attributable {measure}")
         outputs.append(comb_path)
     return combined, pd.DataFrame(closure_rows), outputs
-
 
 def main() -> None:
     burden = pd.read_parquet(BURDEN)
@@ -225,7 +202,6 @@ def main() -> None:
         f"burden_density_v1_20261007 completed {summary['completed_at_utc']}\n", encoding="utf-8"
     )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
-
 
 if __name__ == "__main__":
     main()

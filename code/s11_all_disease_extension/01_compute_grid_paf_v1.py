@@ -1,20 +1,4 @@
-#!/usr/bin/env python3
-"""Compute 0.1-degree PAF rasters for three representative diseases.
-
-Diseases (single pooled RR per +5 kg/m2, reference 22.5, shared by both sexes):
-  493 Ischemic heart disease      RR 1.27 (1.23-1.31)  Lu et al., 2014
-  976 Diabetes mellitus type 2    RR 1.72 (1.65-1.81)  Jayedi et al., 2022
-  543 Alzheimer's and other dementias RR 1.16 (1.05-1.27)  Kivimaki et al., 2018
-
-Per cell: PAF_sex = (sum_k p_k RR_k - 1) / (sum_k p_k RR_k), then overall =
-population-weighted mean of the two sexes. Inputs are the production 0.1-degree
-probability_sex (14 bands) and population_sex (2 bands) rasters.
-
-Grid-year combos per disease: SSP2-4.5 2025 and 2050, SSP1-2.6 2050, SSP5-8.5 2050.
-
-QA: closure of probabilities; cross-check grid-weighted PAF against the Phase-3
-national PAF aggregated over China, the United States and India.
-"""
+"""Compute 0.1-degree PAF rasters for three representative diseases."""
 
 from __future__ import annotations
 
@@ -58,7 +42,6 @@ REFERENCE = 22.5
 NODATA = -9999.0
 COUNTRY_RASTER_LOOKUP = None  # set in main
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -66,16 +49,13 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
-
 def write_json(path: Path, payload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
-
 def category_rr(rr_per_5: float) -> np.ndarray:
     exponent = np.maximum(CATEGORY_REP - REFERENCE, 0.0) / 5.0
     return np.power(rr_per_5, exponent)
-
 
 def compute_paf(scenario: str, year: int, rr_per_5: float):
     prob_path = BMI_ROOT / scenario / str(year) / f"probability_sex_{scenario}_{year}_0p1deg_v1.tif"
@@ -94,7 +74,6 @@ def compute_paf(scenario: str, year: int, rr_per_5: float):
         (female_pop > 0) & (male_pop > -9000)
         & np.all(female_p > -9000, axis=0) & np.all(male_p > -9000, axis=0)
     )
-    # Some cells may have only one sex present; accept if total adult pop > 0.
     total_pop = np.where(pop > 0, pop, 0.0).sum(axis=0)
     valid = (total_pop > 0) & np.all(prob > -9000, axis=0)
 
@@ -121,7 +100,6 @@ def compute_paf(scenario: str, year: int, rr_per_5: float):
     )
     profile.update(dtype="float32", count=1, nodata=np.nan, compress="lzw")
     return overall.astype(np.float32), profile, closure_err
-
 
 def main() -> None:
     outputs: list[Path] = []
@@ -187,7 +165,6 @@ def main() -> None:
         f"paf_grid_multidisease_v1_20261005 completed {summary['completed_at_utc']}\n", encoding="utf-8"
     )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
-
 
 if __name__ == "__main__":
     main()

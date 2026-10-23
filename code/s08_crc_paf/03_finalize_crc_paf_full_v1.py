@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Finalize the 104-task CRC PAF production after all tasks pass."""
 
 from __future__ import annotations

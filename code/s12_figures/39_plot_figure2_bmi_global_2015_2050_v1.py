@@ -1,15 +1,4 @@
-#!/usr/bin/env python3
-"""Figure 2 (redraw v1): Global BMI trajectories and spatial patterns, 2015-2050.
-
-Merges the former Fig. 1A trajectories (panels A-C, SSP2-4.5 reference with
-scenario-difference strips) with the former Fig. 2 spatial grid (panels D-F,
-3 metrics x 4 years on the 0.1-degree grid, SSP2-4.5). No in-figure title;
-panel letters (A)-(F) only. Width 180 mm. Exports PDF + 1600-dpi LZW TIFF.
-
-Map machinery is adapted from the project Figure 2 spatial script (same helper
-module, same mask and fixed colour scales) per the nature-figure asset
-adaptation route; trajectory style follows the project Figure 1A convention.
-"""
+"""Figure 2 (redraw v1): Global BMI trajectories and spatial patterns, 2015-2050."""
 
 from __future__ import annotations
 
@@ -75,7 +64,6 @@ SCENARIO_NAMES = {"Historical": "Historical", "ssp126": "SSP1-2.6", "ssp245": "S
 BLACK = "#151718"
 GREY = "#596064"
 
-
 @dataclass(frozen=True)
 class Metric:
     key: str
@@ -86,13 +74,11 @@ class Metric:
     tmin: float
     tmax: float
 
-
 METRICS = (
     Metric("mean_bmi", "Mean BMI (kg/m\u00b2)", "kg/m\u00b2", 18.0, 32.0, 24.0, 28.5),
     Metric("bmi_ge25", "BMI \u226525 (%)", "%", 0.0, 90.0, 40.0, 65.0),
     Metric("bmi_ge30", "BMI \u226530 (%)", "%", 0.0, 60.0, 12.0, 32.0),
 )
-
 
 def import_helper():
     spec = importlib.util.spec_from_file_location("figure2_redraw_helper", HELPER_SCRIPT)
@@ -103,10 +89,8 @@ def import_helper():
     spec.loader.exec_module(module)
     return module
 
-
 helper = import_helper()
 historical = helper.historical
-
 
 def read_categories(year: int) -> np.ma.MaskedArray:
     layers = []
@@ -120,7 +104,6 @@ def read_categories(year: int) -> np.ma.MaskedArray:
     common_mask = np.ma.getmaskarray(data).any(axis=0)
     return np.ma.array(data, mask=np.broadcast_to(common_mask, data.shape))
 
-
 def derive_metric(categories: np.ma.MaskedArray, metric: Metric) -> np.ma.MaskedArray:
     if metric.key == "mean_bmi":
         return np.ma.sum((categories / 100.0) * MIDPOINTS[:, None, None], axis=0)
@@ -130,12 +113,10 @@ def derive_metric(categories: np.ma.MaskedArray, metric: Metric) -> np.ma.Masked
         return np.ma.sum(categories[4:7], axis=0)
     raise ValueError(metric.key)
 
-
 def metric_cmap(name: str):
     cmap = LinearSegmentedColormap.from_list(name, MAP_COLORS, N=256)
     cmap.set_bad("white")
     return cmap
-
 
 def build_boundaries():
     countries = historical.gpd.read_file(historical.COUNTRY_PATH, engine="pyogrio")
@@ -147,7 +128,6 @@ def build_boundaries():
     adm1.geometry = adm1.geometry.simplify(0.035, preserve_topology=True)
     adm1_segments = historical.geometry_segments(adm1)
     return country_segments, adm1_segments
-
 
 def draw_map(axis, data, metric: Metric, country_segments, adm1_segments) -> None:
     axis.imshow(
@@ -166,7 +146,6 @@ def draw_map(axis, data, metric: Metric, country_segments, adm1_segments) -> Non
     axis.set_aspect("equal", adjustable="box")
     axis.axis("off")
 
-
 def add_colorbar(axis, metric: Metric) -> None:
     colorbar = mpl.colorbar.ColorbarBase(
         axis,
@@ -180,11 +159,9 @@ def add_colorbar(axis, metric: Metric) -> None:
     colorbar.ax.tick_params(labelsize=5.0, length=1.4, width=0.4, pad=0.6)
     colorbar.outline.set_visible(False)
 
-
 def load_trend() -> pd.DataFrame:
     frame = pd.read_csv(TREND_CSV)
     return frame
-
 
 def value_series(frame: pd.DataFrame, metric: Metric, scenario: str) -> pd.Series:
     subset = frame[frame["scenario"] == SCENARIO_NAMES[scenario]].sort_values("year")
@@ -194,7 +171,6 @@ def value_series(frame: pd.DataFrame, metric: Metric, scenario: str) -> pd.Serie
         values = values * 100.0
     return pd.Series(values.values, index=subset["year"].values)
 
-
 def plot() -> list[Path]:
     figure = plt.figure(figsize=(WIDTH_MM / 25.4, HEIGHT_MM / 25.4), constrained_layout=False)
     outer = figure.add_gridspec(
@@ -203,7 +179,6 @@ def plot() -> list[Path]:
     )
     trend = load_trend()
 
-    # ---- Top: trajectories (A-C) with scenario-difference strips ----
     traj = outer[0].subgridspec(
         6, 1, height_ratios=(2.9, 1.0, 2.9, 1.0, 2.9, 1.0), hspace=0.55,
     )
@@ -285,7 +260,6 @@ def plot() -> list[Path]:
             strip_axis.set_xticklabels(["2015", "2025", "2035", "2050"], fontsize=5.0)
             strip_axis.set_xlabel("Year", fontsize=5.2, labelpad=1.5)
 
-    # ---- Bottom: spatial grid (D-F), 4 equal map columns per row ----
     maps = outer[1].subgridspec(3, 4, wspace=0.014, hspace=0.62)
     category_cache: dict[int, np.ma.MaskedArray] = {}
     map_letters = ("d", "e", "f")
@@ -306,7 +280,6 @@ def plot() -> list[Path]:
                     ha="left", va="bottom", fontsize=7.4, fontweight="bold", color=BLACK,
                 )
 
-    # alignment gate FIRST, while only gridspec axes exist (clean comparable groups)
     require_matplotlib_panel_alignment(
         figure,
         json_out=str(OUT / f"{STEM}.alignment.json"),
@@ -316,7 +289,6 @@ def plot() -> list[Path]:
         strict=True,
     )
 
-    # decorations positioned from FINAL aspect-adjusted geometry, after the gate
     figure.canvas.draw()
     for metric_index, metric in enumerate(METRICS):
         first_map = first_map_axes[metric_index]
@@ -352,7 +324,6 @@ def plot() -> list[Path]:
     figure.savefig(preview, dpi=DPI_PREVIEW, bbox_inches="tight")
     plt.close(figure)
     return [pdf, tif, preview]
-
 
 def write_qa(paths: list[Path]) -> None:
     rows = [
@@ -390,7 +361,6 @@ def write_qa(paths: list[Path]) -> None:
     if not all(row["pass"] for row in rows):
         raise RuntimeError("Figure 2 redraw export QA failed")
 
-
 def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     status = OUT / "worker_status.json"
@@ -400,7 +370,6 @@ def main() -> int:
     status.write_text(json.dumps({"status": "complete", "outputs": [str(path) for path in paths]}, indent=2) + "\n", encoding="utf-8")
     print("FIGURE2_REDRAW_PASS")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

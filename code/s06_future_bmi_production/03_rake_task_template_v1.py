@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-"""Rake full-MRP 0.1-degree predictions to formal 0.5-degree targets.
-
-The script consumes the PASS Gate FC02 v2 state, performs a separate
-population-weighted compositional rake for all 30 age-sex strata, and writes
-eight population-masked COGs: four probability families and four companion
-population families.
-"""
+"""Rake full-MRP 0.1-degree predictions to formal 0.5-degree targets."""
 
 from __future__ import annotations
 

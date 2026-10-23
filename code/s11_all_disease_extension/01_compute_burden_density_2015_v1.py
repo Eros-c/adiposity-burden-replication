@@ -1,20 +1,4 @@
-#!/usr/bin/env python3
-"""2015 0.1-degree high-BMI-attributable burden density (23 headline causes).
-
-Replicates the approved production method for year 2015:
-  w(cell)      = sum_sa pop_sa(cell) x PAF_sa(cell)
-  burden(cell) = national_attributable x w(cell) / w(country)
-using the historical sex-age BMI-category share rasters and population rasters
-(2015), the Phase-2 RR crosswalk, and the benchmark study-attributable national
-burden for 2015.
-
-Outputs (11_all_disease_extension/06_spatial_burden/burden_density_2015_v1/data):
-  weight_pop_paf_c{cause}_ssp245_2015_0p1deg_v1.tif   (23 rasters)
-  burden_density_combined23_{deaths,dalys}_ssp245_2015_0p1deg_v1.tif
-  change_{deaths,dalys}_2015_2050_0p1deg_v1.tif       (percent change)
-  absolute_change_{deaths,dalys}_2015_2050_0p1deg_v1.tif
-plus QA (closure per country) and a manifest.
-"""
+"""2015 0.1-degree high-BMI-attributable burden density (23 headline causes)."""
 
 from __future__ import annotations
 

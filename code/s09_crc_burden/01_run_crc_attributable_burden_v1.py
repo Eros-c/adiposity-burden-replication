@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Audit Foresight CRC reference burden and compute national attributable deaths/DALYs."""
 
 from __future__ import annotations
@@ -16,7 +15,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
 
 PROJECT = Path(_cfg.RESULTS)
 FORESIGHT = Path(_cfg.DATA / "GBD2021_foresight_exports" / "foresight_crc_reference_2024_2050.csv")
@@ -36,7 +34,6 @@ EXPECTED_PAF_ROWS = 4 * 26 * 204 * 15 * 2
 EXPECTED_BURDEN_ROWS = 26 * 204 * 15 * 2 * 2
 EXPECTED_JOIN_ROWS = EXPECTED_PAF_ROWS * 2
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -44,11 +41,9 @@ def sha256(path: Path) -> str:
             digest.update(block)
     return digest.hexdigest()
 
-
 def write_json(path: Path, payload):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
 
 def audit_and_crosswalks():
     data = pd.read_csv(FORESIGHT, low_memory=False)
@@ -116,7 +111,6 @@ def audit_and_crosswalks():
     }
     return data, core, location, age, sex, both_qa, audit
 
-
 def load_paf():
     frames = []
     for scenario in SCENARIOS:
@@ -164,7 +158,6 @@ def load_paf():
         "zero_population_rows": int(paf["adult_population"].eq(0).sum()),
     }
     return paf, recovery
-
 
 def match_and_compute(core, location, age, sex, paf):
     burden = core.merge(location[["location_id", "iso3"]], on="location_id", validate="many_to_one")
@@ -215,15 +208,12 @@ def match_and_compute(core, location, age, sex, paf):
     ]
     return merged[keep].copy(), counts
 
-
 SUM_COLUMNS = ["total_burden", "total_burden_lower", "total_burden_upper", "attributable_burden", "attrib_if_paf_rr_lower", "attrib_if_paf_rr_upper", "attrib_if_burden_lower", "attrib_if_burden_upper"]
-
 
 def aggregate(frame, groups):
     result = frame.groupby(groups, observed=True, dropna=False, sort=False)[SUM_COLUMNS].sum().reset_index()
     result["attributable_fraction"] = np.divide(result["attributable_burden"], result["total_burden"], out=np.zeros(len(result)), where=result["total_burden"].to_numpy(float) > 0)
     return result
-
 
 def temporal_flags(global_frame, country_frame):
     rows = []
@@ -243,10 +233,8 @@ def temporal_flags(global_frame, country_frame):
                 rows.append(row)
     return pd.DataFrame(rows)
 
-
 def checksum_manifest(paths):
     return pd.DataFrame([{"path": str(path), "relative_path": str(path.relative_to(OUT)), "bytes": path.stat().st_size, "sha256": sha256(path)} for path in paths])
-
 
 def main():
     started = time.time()
@@ -318,7 +306,6 @@ def main():
     flags_path = OUT / "qa" / "CRC_attributable_burden_temporal_jump_flags_v1.csv"
     flags.to_csv(flags_path, index=False, encoding="utf-8-sig"); paths.append(flags_path)
 
-    # Aggregation is deterministic direct summation; compare re-aggregation from the detailed table.
     check_global = detailed.groupby(["scenario_code", "year", "measure"], as_index=False)["attributable_burden"].sum().rename(columns={"attributable_burden": "detail_sum"})
     check_global = check_global.merge(global_overall[["scenario_code", "year", "measure", "attributable_burden"]], on=["scenario_code", "year", "measure"], validate="one_to_one")
     check_global["absolute_difference"] = np.abs(check_global["detail_sum"] - check_global["attributable_burden"])
@@ -387,7 +374,6 @@ def main():
     (OUT / "RUNNING.flag").unlink(missing_ok=True)
     (OUT / "COMPLETE.flag").write_text("CRC_ATTRIBUTABLE_DEATHS_DALYS_COMPLETE\n", encoding="ascii")
     print(json.dumps({"status": "PASS", "rows": len(detailed), "locations": 204, "temporal_flags": len(flags), "elapsed_seconds": round(time.time() - started, 3)}, ensure_ascii=False))
-
 
 if __name__ == "__main__":
     main()
