@@ -1,8 +1,5 @@
 # Global spatiotemporal distribution of adiposity-associated disease risk, 2015–2050
 
-Replication code for the manuscript *"Global spatiotemporal distribution of
-adiposity-associated disease risk"* (submitted).
-
 This repository contains the complete analysis pipeline: from harmonized
 covariates and national BMI anchors, through Bayesian multilevel regression
 with poststratification (MRP) and annual 0.1° BMI projections under four SSP
